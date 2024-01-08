@@ -57,7 +57,11 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	if err != nil {
 		return nil, err
 	}
-	predictor, err := NewFirstOccurrencePredictor(jobConfig.ID, jobConfig.ProfileConfig.Threshold, predictorConsumer.RcvChannel())
+	predictor, err := NewFirstOccurrencePredictor(
+		jobConfig.ID,
+		jobConfig.ProfileConfig,
+		predictorConsumer.RcvChannel(),
+		builder.GetCommunicationChan())
 	if err != nil {
 		return nil, err
 	}
