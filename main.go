@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"ueba-profiling/config"
@@ -10,11 +11,11 @@ import (
 
 func main() {
 	log.Println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
-	appConfig, err := config.NewAppConfigFrom(config.DefConfigFilePath)
+	appConfig, err := config.LoadFile(config.DefaultConfigFilePath)
 	if err != nil {
-		log.Fatalf("failed to parse configuration file %s: %v", config.DefConfigFilePath, err)
+		log.Fatalf("failed to parse configuration file %s: %v", config.DefaultConfigFilePath, err)
 	}
-	config.GlobalConfig = appConfig
+	config.AppConfig = appConfig
 
 	jobManager := manager.NewJobManager()
 	jobManager.Run()
@@ -24,7 +25,7 @@ func main() {
 	jobHandler := controller.NewJobHandler(jobManager)
 	jobHandler.MakeHandler(apiGroup)
 
-	err = route.Run(appConfig.GetServerAddr())
+	err = route.Run(fmt.Sprintf("%s:%d", config.AppConfig.Service.Host, config.AppConfig.Service.Port))
 	if err != nil {
 		log.Fatalf("failed to start the server: %v", err)
 	}

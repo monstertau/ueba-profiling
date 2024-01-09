@@ -5,6 +5,7 @@ import (
 	"ueba-profiling/config"
 	"ueba-profiling/external"
 	"ueba-profiling/repository"
+	"ueba-profiling/sink"
 	"ueba-profiling/view"
 )
 
@@ -18,16 +19,17 @@ type (
 		Stop()
 	}
 	FirstOccurrenceWorker struct {
-		id        string
-		builder   *FirstOccurrenceBuilder
-		predictor *FirstOccurrencePredictor
+		id         string
+		builder    *FirstOccurrenceBuilder
+		predictor  *FirstOccurrencePredictor
+		sinkWorker *sink.SinkWorker
 	}
 )
 
 func NewProfilingWorker(jobConfig *view.JobConfig) (IWorker, error) {
 	switch jobConfig.ProfileConfig.ProfileType {
 	case profileTypeFirstOccurrence:
-		return NewFirstOccurrenceWorker(jobConfig, repository.MongoRepository{})
+		return NewFirstOccurrenceWorker(jobConfig, &repository.MongoRepository{})
 	default:
 		return nil, fmt.Errorf("cant find profile with type %v", jobConfig.ProfileConfig.ProfileType)
 	}
@@ -37,7 +39,7 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	builderCfg := map[string]interface{}{
 		"bootstrap.servers": jobConfig.LogSourceBuilderConfig.Config.BootstrapServer,
 		"topics":            jobConfig.LogSourceBuilderConfig.Config.Topic,
-		"group.id":          fmt.Sprintf("%s_%v", config.GlobalConfig.KafkaLogsourceGroupIDPrefix, jobConfig.ID),
+		"group.id":          fmt.Sprintf("%s_%v", config.AppConfig.KafkaLogSource.GroupID, jobConfig.ID),
 	}
 	builderConsumer, err := external.FactoryConsumer(builderCfg)
 	if err != nil {
@@ -51,9 +53,13 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	predictorCfg := map[string]interface{}{
 		"bootstrap.servers": jobConfig.LogSourcePredictorConfig.Config.BootstrapServer,
 		"topics":            jobConfig.LogSourcePredictorConfig.Config.Topic,
-		"group.id":          fmt.Sprintf("%s_%v", config.GlobalConfig.KafkaLogsourceGroupIDPrefix, jobConfig.ID),
+		"group.id":          fmt.Sprintf("%s_%v", config.AppConfig.KafkaLogSource.GroupID, jobConfig.ID),
 	}
 	predictorConsumer, err := external.FactoryConsumer(predictorCfg)
+	if err != nil {
+		return nil, err
+	}
+	sinkWorker, err := sink.NewSinkWorker(jobConfig.OutputConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +67,7 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 		jobConfig.ID,
 		jobConfig.ProfileConfig,
 		predictorConsumer.RcvChannel(),
+		sinkWorker.GetInChan(),
 		builder.GetCommunicationChan())
 	if err != nil {
 		return nil, err

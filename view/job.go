@@ -32,5 +32,12 @@ type (
 		ProfileConfig            *ProfileConfig   `json:"profile_config" binding:"required"`
 		LogSourceBuilderConfig   *LogSourceConfig `json:"builder_source_config" binding:"required"`
 		LogSourcePredictorConfig *LogSourceConfig `json:"predictor_source_config" binding:"required"`
+		OutputConfig             *OutputConfig    `json:"output_config" binding:"required"`
+	}
+	OutputConfig struct {
+		ExpirationTime string                 `mapstructure:"expiration_time" json:"expiration_time"`
+		Type           string                 `mapstructure:"type" json:"type"`
+		Config         map[string]interface{} `mapstructure:"config" json:"config"`
+		Workers        int                    `mapstructure:"workers" json:"workers"`
 	}
 )

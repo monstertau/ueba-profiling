@@ -3,10 +3,14 @@ package profile
 type BloomFilterModel struct {
 }
 
-func (m *BloomFilterModel) Contains(entity string, attribute string) bool {
+func (m *BloomFilterModel) Contains(key string) bool {
 	return false
 }
 
-func (m *BloomFilterModel) Update(entity string, attributes map[string]int) {
+func (m *BloomFilterModel) Update(data string) {
+
+}
+
+func (m *BloomFilterModel) Rebuild(data []string) {
 
 }

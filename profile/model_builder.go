@@ -9,16 +9,23 @@ import (
 	"ueba-profiling/view"
 )
 
-type FirstOccurrenceBuilder struct {
-	id              string
-	cfg             *view.ProfileConfig
-	inChan          chan []byte
-	batch           []*model.Frequency
-	saveDuration    time.Duration
-	communicationCh chan []*model.Frequency
-	repo            repository.IRepository
-	logger          *logrus.Entry
-}
+type (
+	CorrelationBuilder struct {
+		id     string
+		cfg    *view.ProfileConfig
+		logger *logrus.Entry
+	}
+	FirstOccurrenceBuilder struct {
+		id              string
+		cfg             *view.ProfileConfig
+		inChan          chan []byte
+		batch           []*model.Frequency
+		saveDuration    time.Duration
+		communicationCh chan []*model.Frequency
+		repo            repository.IRepository
+		logger          *logrus.Entry
+	}
+)
 
 func NewFirstOccurrenceBuilder(id string, inChan chan []byte, conf *view.ProfileConfig, repo repository.IRepository) (*FirstOccurrenceBuilder, error) {
 	return &FirstOccurrenceBuilder{

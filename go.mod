@@ -6,10 +6,12 @@ require (
 	github.com/IBM/sarama v1.42.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/pkg/errors v0.9.1
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.18.2
 	github.com/syndtr/goleveldb v1.0.0
+	github.com/tidwall/gjson v1.17.0
 )
 
 require (
@@ -55,6 +57,8 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	go.uber.org/atomic v1.9.0 // indirect

@@ -3,9 +3,10 @@ package model
 import "time"
 
 type Frequency struct {
-	ID         string    `bson:"id"`
-	StartTime  time.Time `bson:"start_time"`
-	EndTime    time.Time `bson:"end_time"`
-	Entities   string    `bson:"entities"`
-	Attributes string    `bson:"attributes"`
+	ID         string    `json:"id"`
+	StartTime  time.Time `json:"start_time"`
+	EndTime    time.Time `json:"end_time"`
+	Entities   string    `json:"entities"`
+	Attributes string    `json:"attributes"`
+	Count      int       `json:"cnt"`
 }
