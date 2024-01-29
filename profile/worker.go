@@ -2,6 +2,7 @@ package profile
 
 import (
 	"fmt"
+	"time"
 	"ueba-profiling/config"
 	"ueba-profiling/external"
 	"ueba-profiling/repository"
@@ -19,10 +20,11 @@ type (
 		Stop()
 	}
 	FirstOccurrenceWorker struct {
-		id         string
-		builder    *FirstOccurrenceBuilder
-		predictor  *FirstOccurrencePredictor
-		sinkWorker *sink.SinkWorker
+		id                                 string
+		builder                            *FirstOccurrenceBuilder
+		builderConsumer, predictorConsumer external.KafkaConsumer
+		predictor                          *FirstOccurrencePredictor
+		sinkWorker                         *sink.SinkWorker
 	}
 )
 
@@ -37,8 +39,8 @@ func NewProfilingWorker(jobConfig *view.JobConfig) (IWorker, error) {
 
 func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IRepository) (*FirstOccurrenceWorker, error) {
 	builderCfg := map[string]interface{}{
-		"bootstrap.servers": jobConfig.LogSourceBuilderConfig.Config.BootstrapServer,
-		"topics":            jobConfig.LogSourceBuilderConfig.Config.Topic,
+		"bootstrap.servers": jobConfig.LogSourceBuilderConfig.BootstrapServer,
+		"topics":            jobConfig.LogSourceBuilderConfig.Topic,
 		"group.id":          fmt.Sprintf("%s_%v", config.AppConfig.KafkaLogSource.GroupID, jobConfig.ID),
 	}
 	builderConsumer, err := external.FactoryConsumer(builderCfg)
@@ -51,8 +53,8 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	}
 
 	predictorCfg := map[string]interface{}{
-		"bootstrap.servers": jobConfig.LogSourcePredictorConfig.Config.BootstrapServer,
-		"topics":            jobConfig.LogSourcePredictorConfig.Config.Topic,
+		"bootstrap.servers": jobConfig.LogSourcePredictorConfig.BootstrapServer,
+		"topics":            jobConfig.LogSourcePredictorConfig.Topic,
 		"group.id":          fmt.Sprintf("%s_%v", config.AppConfig.KafkaLogSource.GroupID, jobConfig.ID),
 	}
 	predictorConsumer, err := external.FactoryConsumer(predictorCfg)
@@ -66,6 +68,7 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	predictor, err := NewFirstOccurrencePredictor(
 		jobConfig.ID,
 		jobConfig.ProfileConfig,
+		repo,
 		predictorConsumer.RcvChannel(),
 		sinkWorker.GetInChan(),
 		builder.GetCommunicationChan())
@@ -73,21 +76,26 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 		return nil, err
 	}
 
-	builderConsumer.Start()
-	predictorConsumer.Start()
 	return &FirstOccurrenceWorker{
-		id:        jobConfig.ID,
-		builder:   builder,
-		predictor: predictor,
+		id:                jobConfig.ID,
+		builder:           builder,
+		builderConsumer:   builderConsumer,
+		predictor:         predictor,
+		predictorConsumer: predictorConsumer,
 	}, nil
 }
 
 func (w *FirstOccurrenceWorker) Start() {
 	w.builder.Start()
+	w.builderConsumer.Start()
+	time.Sleep(10 * time.Second)
+	w.predictorConsumer.Start()
 	w.predictor.Start()
 }
 
 func (w *FirstOccurrenceWorker) Stop() {
+	w.builderConsumer.Stop()
+	w.predictorConsumer.Stop()
 	w.builder.Stop()
 	w.predictor.Stop()
 }

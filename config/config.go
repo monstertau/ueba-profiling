@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultConfigFilePath = "./stateless_conf.yaml"
+	DefaultConfigFilePath = "./config.yml"
 
 	// DefRedisAddr default redis
 	DefRedisAddr     = "localhost:8379"
@@ -77,7 +77,7 @@ type (
 		Elastic            *ElasticConfig      `mapstructure:"elastic" json:"elastic"`
 		ProfileModel       *ProfileModelConfig `mapstructure:"profile_model" json:"profile_model"`
 		TracingConfig      *TracingConfig      `mapstructure:"tracing" json:"tracing"`
-		NumSnapshotWorker  int                 `mapstructure:"num_snapshot_worker" json:"num_snapshot_worker"`
+		NumConsumer        int                 `mapstructure:"num_consumer" json:"num_consumer"`
 		KafkaNotify        *KafkaConfig        `mapstructure:"kafka_notify" json:"kafka_notify"`
 		InfluxDB           *InfluxDBConfig     `mapstructure:"influxdb" json:"influxdb"`
 		Destination        *DestinationConfig  `mapstructure:"destination" json:"destination"`
@@ -157,7 +157,7 @@ type (
 	}
 
 	Endpoint struct {
-		GetJobs []string `mapstructure:"get_jobs" json:"get_jobs"`
+		GetJobs string `mapstructure:"get_job" json:"get_job"`
 	}
 
 	Channel struct {
@@ -346,7 +346,7 @@ func DefaultChannelConfig() *Channel {
 
 func DefaultEndpoint() *Endpoint {
 	return &Endpoint{
-		GetJobs: []string{DefEndpointGetJobs, DefEndpointGetJobsV3},
+		GetJobs: DefEndpointGetJobs,
 	}
 }
 
@@ -448,23 +448,23 @@ func DefaultInfluxDBConfig() *InfluxDBConfig {
 }
 func DefaultConfig() *Config {
 	return &Config{
-		Service:           DefaultNodeConfig(),
-		MongoDB:           DefaultMongoDBConfig(),
-		Redis:             DefaultRedisConfig(),
-		RedisAsset:        DefaultRedisConfig(),
-		Channel:           DefaultChannelConfig(),
-		Endpoint:          DefaultEndpoint(),
-		Resource:          DefaultResourceConfig(),
-		TimestampField:    DefTimestampField,
-		EventIdField:      DefEventIDField,
-		TaggingField:      DefTaggingField,
-		KafkaLogSource:    DefaultKafkaConfig(),
-		Elastic:           DefaultElasticConfig(),
-		ProfileModel:      DefaultProfileModel(),
-		TracingConfig:     DefaultTracingConfig(),
-		NumSnapshotWorker: DefNumSnapshotWorker,
-		KafkaNotify:       DefaultKafkaNotifyConfig(),
-		InfluxDB:          DefaultInfluxDBConfig(),
+		Service:        DefaultNodeConfig(),
+		MongoDB:        DefaultMongoDBConfig(),
+		Redis:          DefaultRedisConfig(),
+		RedisAsset:     DefaultRedisConfig(),
+		Channel:        DefaultChannelConfig(),
+		Endpoint:       DefaultEndpoint(),
+		Resource:       DefaultResourceConfig(),
+		TimestampField: DefTimestampField,
+		EventIdField:   DefEventIDField,
+		TaggingField:   DefTaggingField,
+		KafkaLogSource: DefaultKafkaConfig(),
+		Elastic:        DefaultElasticConfig(),
+		ProfileModel:   DefaultProfileModel(),
+		TracingConfig:  DefaultTracingConfig(),
+		NumConsumer:    DefNumSnapshotWorker,
+		KafkaNotify:    DefaultKafkaNotifyConfig(),
+		InfluxDB:       DefaultInfluxDBConfig(),
 		DumpSnapshot: &DumpSnapshotConfig{
 			Enable:                 true,
 			NumSnapshotWorker:      5,

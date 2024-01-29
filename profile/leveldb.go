@@ -25,6 +25,7 @@ type (
 )
 
 func NewLevelDBCachingRepository[T any](filePath string) (*LevelDBCachingRepository[T], error) {
+
 	db, err := leveldb.OpenFile(filePath, &opt.Options{OpenFilesCacheCapacity: 100})
 	if err != nil {
 		return nil, err

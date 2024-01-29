@@ -3,7 +3,11 @@ package external
 import (
 	"errors"
 	"fmt"
-	"ueba-profiling/config"
+)
+
+const (
+	KafkaTypeSegmentio = "segmentio"
+	KafkaTypeSarama    = "sarama"
 )
 
 type (
@@ -16,12 +20,12 @@ type (
 )
 
 var consumerMap = map[string]NewConsumerFunc{
-	config.KafkaTypeSegmentio: NewSegmentioConsumer,
-	config.KafkaTypeSarama:    NewSaramaConsumer,
+	KafkaTypeSegmentio: NewSegmentioConsumer,
+	KafkaTypeSarama:    NewSaramaConsumer,
 }
 
 func FactoryConsumer(cnf map[string]interface{}) (KafkaConsumer, error) {
-	kType := config.GlobalConfig.ConsumerType
+	kType := KafkaTypeSegmentio
 	f, ok := consumerMap[kType]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("undefined consumer type: %v", kType))

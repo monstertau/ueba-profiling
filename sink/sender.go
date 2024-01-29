@@ -46,14 +46,16 @@ func FactorySender(conf *view.OutputConfig) (Sender, error) {
 
 func NewGoKafka(c map[string]interface{}) (*GoKafka, error) {
 	bootstrapServers := c["bootstrap.servers"].(string)
-	topics := c["topics"].(string)
+	topics := c["topic"].(string)
 	writer := &kafka.Writer{
 		Addr:     kafka.TCP(bootstrapServers),
 		Topic:    topics,
 		Balancer: &kafka.RoundRobin{},
 		Async:    true,
 	}
-	conn, err := kafka.DialLeader(context.Background(), "tcp", bootstrapServers, topics, 0)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := kafka.DialLeader(ctx, "tcp", bootstrapServers, topics, 0)
 	if err != nil {
 		panic(err)
 	}

@@ -40,7 +40,7 @@ func NewSaramaConsumer(cnf map[string]interface{}) (KafkaConsumer, error) {
 	}
 	groupId := cnf["group.id"].(string)
 
-	numWorkers := config.GlobalConfig.NumConsumer
+	numWorkers := config.AppConfig.NumConsumer
 	consumers := make([]sarama.ConsumerGroup, 0, numWorkers)
 	for i := 0; i < numWorkers; i++ {
 		cfg := sarama.NewConfig()

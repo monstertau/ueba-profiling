@@ -17,7 +17,7 @@ type JobHub struct {
 
 func NewJobHub() *JobHub {
 	return &JobHub{
-		endpoint: config.GlobalConfig.EndpointGetJobs,
+		endpoint: config.AppConfig.Endpoint.GetJobs,
 		timeout:  1 * time.Minute,
 	}
 }

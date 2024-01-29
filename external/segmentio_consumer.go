@@ -20,12 +20,8 @@ type NewKafka struct {
 }
 
 func NewSegmentioConsumer(cnf map[string]interface{}) (KafkaConsumer, error) {
-	logrus.Infof("Topics string: %s", cnf["topics"].([]interface{}))
 	bootstrap := strings.Split(cnf["bootstrap.servers"].(string), ",")
-	topics := make([]string, len(cnf["topics"].([]interface{})))
-	for i, t := range cnf["topics"].([]interface{}) {
-		topics[i] = t.(string)
-	}
+	topics := strings.Split(cnf["topics"].(string), ",")
 	groupId := cnf["group.id"].(string)
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        bootstrap,
@@ -33,7 +29,7 @@ func NewSegmentioConsumer(cnf map[string]interface{}) (KafkaConsumer, error) {
 		MaxWait:        time.Second,
 		CommitInterval: time.Second,
 		GroupID:        groupId,
-		StartOffset:    kafka.LastOffset,
+		StartOffset:    kafka.FirstOffset,
 	})
 	k := &NewKafka{
 		reader:      r,

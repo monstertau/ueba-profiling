@@ -25,17 +25,28 @@ type (
 		repo            repository.IRepository
 		logger          *logrus.Entry
 	}
+	RarityBuilder struct {
+		id              string
+		cfg             *view.ProfileConfig
+		inChan          chan []byte
+		batch           []*model.Frequency
+		saveDuration    time.Duration
+		communicationCh chan []*model.Frequency
+		repo            repository.IRepository
+		logger          *logrus.Entry
+	}
 )
 
 func NewFirstOccurrenceBuilder(id string, inChan chan []byte, conf *view.ProfileConfig, repo repository.IRepository) (*FirstOccurrenceBuilder, error) {
 	return &FirstOccurrenceBuilder{
-		id:           id,
-		cfg:          conf,
-		inChan:       inChan,
-		batch:        make([]*model.Frequency, 0),
-		saveDuration: 5 * time.Second,
-		repo:         repo,
-		logger:       logrus.WithField("service", "builder"),
+		id:              id,
+		cfg:             conf,
+		inChan:          inChan,
+		batch:           make([]*model.Frequency, 0),
+		saveDuration:    5 * time.Second,
+		repo:            repo,
+		communicationCh: make(chan []*model.Frequency, 1000),
+		logger:          logrus.WithField("service", "builder"),
 	}, nil
 }
 

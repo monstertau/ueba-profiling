@@ -36,7 +36,7 @@ func NewJobManager() *JobManager {
 func (m *JobManager) Run() {
 	go func() {
 		m.pullJobs()
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(10 * time.Minute)
 		for {
 			select {
 			case <-ticker.C:
@@ -77,6 +77,7 @@ func (m *JobManager) CreateJob(jobConfig *view.JobConfig) error {
 		}
 		return err
 	}
+	worker.Start()
 	m.RunningWorkers[jobConfig.ID] = &JobMetadata{
 		worker:    worker,
 		JobConfig: jobConfig,

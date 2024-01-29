@@ -1,60 +1,14 @@
-# default configuration
-server:
-  host: 0.0.0.0
-  port: 9199
-
-redis:
-  addr: 10.255.250.41:8379
-  db: 0
-  password:
-
-resource:
-  maxmind_asn: resources/GeoLite2-ASN_20200908/GeoLite2-ASN.mmdb
-  maxmind_country: resources/GeoLite2-Country_20200908/GeoLite2-Country.mmdb
-  tld: resources/TLDs.csv
-  regex_file: resources/regexes.yaml
-mongo:
-  addr: 10.255.250.41
-  port: 8027
-  user: kian
-  password: 098poiA#
-  db: kian
-  # in KB
-  gridfs_chunk_size: 1024
-  range_time_random: "300000ms"
-
-gateway:
+service:
+  port: 9998
   host: localhost
-  port: 9090
 
 channel_config:
-  log_source_consumer_size: 1000000
-  behavior_source_consumer_size: 1000000
-  kafka_input_size: 1000
+  log_source_consumer_size: 10000
+  behavior_source_consumer_size: 10000
   message_size: 10000
 
 endpoint:
-  get_jobs: http://localhost:9090/api/v2/worker/profiling/jobs
+  get_job: http://localhost:9090/api/v1/jobs/profiling
 
-event_config:
-  timestamp_field: timestamp
-  event_id: event_id
-
-kafka_logsource:
-  group_id_prefix: kc_profiling_test
-  pool_cap_size: 20000
-  pool_len_size: 1000
-
-batch_expire_ticker_duration: 1d
-keep_old_batch_duration: 1d
-force_server_timestamp: false
-batch_expire_worker_throughput: 24
-notify:
-  host: 10.255.250.41:9092
-  topic: notify_dump_profile
-
-max_event_per_saving: 1000000
-
-num_consumer: 2
-num_router_worker: 10
-consumer_type: sarama
+kafka:
+  group_id: ueba-profiling-test-24
