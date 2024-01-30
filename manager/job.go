@@ -77,11 +77,13 @@ func (m *JobManager) CreateJob(jobConfig *view.JobConfig) error {
 		}
 		return err
 	}
+	m.logger.Infof("Start Running Profiling Job with ID %v, type %v", jobConfig.ID, jobConfig.ProfileConfig.ProfileType)
 	worker.Start()
 	m.RunningWorkers[jobConfig.ID] = &JobMetadata{
 		worker:    worker,
 		JobConfig: jobConfig,
 	}
+
 	return nil
 }
 

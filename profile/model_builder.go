@@ -10,22 +10,7 @@ import (
 )
 
 type (
-	CorrelationBuilder struct {
-		id     string
-		cfg    *view.ProfileConfig
-		logger *logrus.Entry
-	}
-	FirstOccurrenceBuilder struct {
-		id              string
-		cfg             *view.ProfileConfig
-		inChan          chan []byte
-		batch           []*model.Frequency
-		saveDuration    time.Duration
-		communicationCh chan []*model.Frequency
-		repo            repository.IRepository
-		logger          *logrus.Entry
-	}
-	RarityBuilder struct {
+	ModelBuilder struct {
 		id              string
 		cfg             *view.ProfileConfig
 		inChan          chan []byte
@@ -37,8 +22,8 @@ type (
 	}
 )
 
-func NewFirstOccurrenceBuilder(id string, inChan chan []byte, conf *view.ProfileConfig, repo repository.IRepository) (*FirstOccurrenceBuilder, error) {
-	return &FirstOccurrenceBuilder{
+func NewModelBuilder(id string, inChan chan []byte, conf *view.ProfileConfig, repo repository.IRepository) (*ModelBuilder, error) {
+	return &ModelBuilder{
 		id:              id,
 		cfg:             conf,
 		inChan:          inChan,
@@ -50,7 +35,7 @@ func NewFirstOccurrenceBuilder(id string, inChan chan []byte, conf *view.Profile
 	}, nil
 }
 
-func (b *FirstOccurrenceBuilder) Start() {
+func (b *ModelBuilder) Start() {
 	go func() {
 		ticker := time.NewTicker(b.saveDuration)
 		for {
@@ -63,10 +48,9 @@ func (b *FirstOccurrenceBuilder) Start() {
 					continue
 				}
 				b.batch = append(b.batch, m)
-				if len(b.batch) < 1000 {
-					continue
+				if len(b.batch) > 1000 {
+					b.dump()
 				}
-				b.dump()
 			case <-ticker.C:
 				if len(b.batch) == 0 {
 					continue
@@ -77,7 +61,7 @@ func (b *FirstOccurrenceBuilder) Start() {
 	}()
 }
 
-func (b *FirstOccurrenceBuilder) dump() {
+func (b *ModelBuilder) dump() {
 	err := b.repo.Persist(b.batch)
 	if err != nil {
 		b.logger.Errorf("error in persist frequency model: %v", err)
@@ -87,10 +71,10 @@ func (b *FirstOccurrenceBuilder) dump() {
 	b.batch = make([]*model.Frequency, 0)
 }
 
-func (b *FirstOccurrenceBuilder) Stop() {
+func (b *ModelBuilder) Stop() {
 
 }
 
-func (b *FirstOccurrenceBuilder) GetCommunicationChan() chan []*model.Frequency {
+func (b *ModelBuilder) GetCommunicationChan() chan []*model.Frequency {
 	return b.communicationCh
 }

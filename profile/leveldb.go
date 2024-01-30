@@ -163,7 +163,7 @@ func (r *LevelDBCachingRepository[T]) CopyFrom(another *LevelDBCachingRepository
 		value := iter.Value()
 		err := r.db.Put(key, value, nil)
 		if err != nil {
-			return errors.Wrap(err, "cannot put key-value to level db")
+			return errors.Wrap(err, "cannot put Key-Value to level db")
 		}
 	}
 	return iter.Error()

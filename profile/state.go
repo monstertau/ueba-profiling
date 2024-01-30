@@ -18,8 +18,12 @@ type (
 		MaxSize         int
 		LRUState        *lru.Cache[string, T]
 		logger          *logrus.Entry
-		//syncDuration    time.Duration
-		//managerChan     chan interface{}
+		//syncDuration time.Duration
+		//managerChan chan interface{}
+	}
+	KeyValue[T any] struct {
+		Key   string
+		Value T
 	}
 )
 
@@ -86,4 +90,17 @@ func (s *CacheState[T]) Set(key string, value T) bool {
 
 func (s *CacheState[T]) GetAllKey() []string {
 	return nil
+}
+
+func (s *CacheState[T]) GetAll() []*KeyValue[T] {
+	ks := s.LRUState.Keys()
+	vs := s.LRUState.Values()
+	res := make([]*KeyValue[T], 0)
+	for i := 0; i < len(ks); i++ {
+		res = append(res, &KeyValue[T]{
+			Key:   ks[i],
+			Value: vs[i],
+		})
+	}
+	return res
 }

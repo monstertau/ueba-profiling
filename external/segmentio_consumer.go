@@ -48,7 +48,7 @@ func (k *NewKafka) close() {
 }
 
 func (k *NewKafka) Start() {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	commitTicker := time.NewTicker(time.Second * 10)
 	commitMsg := kafka.Message{Offset: -1}
 	commit := func(msg kafka.Message) {

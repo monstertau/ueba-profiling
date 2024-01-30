@@ -2,6 +2,7 @@ package view
 
 type (
 	ProfileConfig struct {
+		ID          string    `json:"id"`
 		Name        string    `json:"name"`
 		Status      int64     `json:"status"`
 		ProfileType string    `json:"profile_type"`

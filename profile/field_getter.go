@@ -12,7 +12,7 @@ const (
 
 type (
 	FieldGetter interface {
-		// Get returns the value extracted from the json msg
+		// Get returns the Value extracted from the json msg
 		Get(msg []byte) (interface{}, bool)
 
 		// GetTargetFieldName returns the field name

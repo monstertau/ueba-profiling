@@ -12,6 +12,7 @@ import (
 
 const (
 	profileTypeFirstOccurrence = "first_occurrence"
+	profileTypeRarity          = "rarity"
 )
 
 type (
@@ -19,25 +20,19 @@ type (
 		Start()
 		Stop()
 	}
-	FirstOccurrenceWorker struct {
+	ProfilingWorker struct {
 		id                                 string
-		builder                            *FirstOccurrenceBuilder
+		builder                            *ModelBuilder
 		builderConsumer, predictorConsumer external.KafkaConsumer
-		predictor                          *FirstOccurrencePredictor
 		sinkWorker                         *sink.SinkWorker
+		predictor                          IPredictor
+	}
+	FirstOccurrenceWorker struct {
+		predictor *FirstOccurrencePredictor
 	}
 )
 
 func NewProfilingWorker(jobConfig *view.JobConfig) (IWorker, error) {
-	switch jobConfig.ProfileConfig.ProfileType {
-	case profileTypeFirstOccurrence:
-		return NewFirstOccurrenceWorker(jobConfig, &repository.MongoRepository{})
-	default:
-		return nil, fmt.Errorf("cant find profile with type %v", jobConfig.ProfileConfig.ProfileType)
-	}
-}
-
-func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IRepository) (*FirstOccurrenceWorker, error) {
 	builderCfg := map[string]interface{}{
 		"bootstrap.servers": jobConfig.LogSourceBuilderConfig.BootstrapServer,
 		"topics":            jobConfig.LogSourceBuilderConfig.Topic,
@@ -47,7 +42,8 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	if err != nil {
 		return nil, err
 	}
-	builder, err := NewFirstOccurrenceBuilder(jobConfig.ID, builderConsumer.RcvChannel(), jobConfig.ProfileConfig, repo)
+	repo := &repository.MongoRepository{}
+	builder, err := NewModelBuilder(jobConfig.ID, builderConsumer.RcvChannel(), jobConfig.ProfileConfig, repo)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +61,8 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	if err != nil {
 		return nil, err
 	}
-	predictor, err := NewFirstOccurrencePredictor(
-		jobConfig.ID,
-		jobConfig.ProfileConfig,
+	predictor, err := FactoryPredictor(
+		jobConfig,
 		repo,
 		predictorConsumer.RcvChannel(),
 		sinkWorker.GetInChan(),
@@ -75,8 +70,7 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	if err != nil {
 		return nil, err
 	}
-
-	return &FirstOccurrenceWorker{
+	return &ProfilingWorker{
 		id:                jobConfig.ID,
 		builder:           builder,
 		builderConsumer:   builderConsumer,
@@ -85,15 +79,18 @@ func NewFirstOccurrenceWorker(jobConfig *view.JobConfig, repo repository.IReposi
 	}, nil
 }
 
-func (w *FirstOccurrenceWorker) Start() {
+func (w *ProfilingWorker) Start() {
 	w.builder.Start()
 	w.builderConsumer.Start()
-	time.Sleep(10 * time.Second)
-	w.predictorConsumer.Start()
-	w.predictor.Start()
+	go func() {
+		time.Sleep(30 * time.Second)
+		w.predictorConsumer.Start()
+		w.predictor.Start()
+	}()
+
 }
 
-func (w *FirstOccurrenceWorker) Stop() {
+func (w *ProfilingWorker) Stop() {
 	w.builderConsumer.Stop()
 	w.predictorConsumer.Stop()
 	w.builder.Stop()

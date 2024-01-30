@@ -8,7 +8,7 @@ channel_config:
   message_size: 10000
 
 endpoint:
-  get_job: http://localhost:9090/api/v1/jobs/profiling
+  get_job: http://localhost:9090/api/v1/jobs/worker/profiling
 
 kafka:
-  group_id: ueba-profiling-test-24
+  group_id: ueba-profiling-test-31
